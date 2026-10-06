@@ -98,7 +98,7 @@ ${waves}
 <g font-family="Pretendard, system-ui, sans-serif">
 <text x="${pad + 4}" y="${top}" font-size="${portrait ? 25 : 26}" font-weight="600" letter-spacing="5" fill="${p.ac}" opacity=".95">${esc(o.eyebrow)}</text>
 ${titleLines.map((l, i) => `<text x="${pad}" y="${top + 28 + tSize + i * (tSize + 8)}" font-size="${tSize}" font-weight="800" letter-spacing="-3" fill="url(#${uid}tx)">${esc(l)}</text>`).join('')}
-${subLines.map((l, i) => `<text x="${pad + 4}" y="${top + 28 + tSize + (titleLines.length - 1) * (tSize + 8) + (portrait ? 58 : 72) + i * (portrait ? 34 : 36)}" font-size="${portrait ? 23 : 25}" font-weight="500" fill="#FFFFFF" opacity=".84">${esc(l)}</text>`).join('')}
+${subLines.map((l, i) => `<text x="${pad + 4}" y="${top + 28 + tSize + (titleLines.length - 1) * (tSize + 8) + 72 + i * (portrait ? 34 : 36)}" font-size="${portrait ? 23 : 25}" font-weight="500" fill="#FFFFFF" opacity=".84">${esc(l)}</text>`).join('')}
 ${o.note ? `<g><rect x="${pad}" y="${H - (portrait ? 96 : 86)}" rx="18" ry="18" width="${Math.min(W - pad * 2, 26 + o.note.length * (portrait ? 14 : 15))}" height="44" fill="#000000" opacity=".34"/><text x="${pad + 22}" y="${H - (portrait ? 66 : 56)}" font-size="${portrait ? 20 : 21}" font-weight="700" fill="${p.ac}">${esc(o.note)}</text></g>` : ''}
 </g>
 </g></svg>`;
