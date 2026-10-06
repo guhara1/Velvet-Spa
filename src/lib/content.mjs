@@ -13,27 +13,28 @@ import { GU_SECTIONS, GU_FAQ } from '../content/gu-pools.mjs';
 import { GU_SECTIONS_B } from '../content/gu-pools2.mjs';
 import { GU_SECTIONS_C } from '../content/gu-pools3.mjs';
 import { PROFILE_PHRASE, CORE_COURSES, shortDong } from '../content/vocab.mjs';
+import { DONG_META, GU_META } from '../content/meta-pools.mjs';
 import { SHOP_SECTIONS, FLOW_ROAD, FLOW_VISIT } from '../content/shop-pools.mjs';
 
 const ALL_DONG = [...DONG_SECTIONS, ...DONG_SECTIONS_B, ...DONG_SECTIONS_C];
 const ALL_GU = [...GU_SECTIONS, ...GU_SECTIONS_B, ...GU_SECTIONS_C];
 
-/** 행정동 요약(답변 우선) 문장 — AEO 대응 */
+/** 행정동 요약(답변 우선) — AEO 대응 / 디스크립션 키워드 2종 포함 */
 const DONG_ANSWER = [
   '{p} {g} {d} 기준으로 로드샵과 출장 마사지·홈타이 {shops}곳을 정리했습니다. 참고 가격대는 60분 {p60}만원대, 90분 {p90}만원대이며, 평일 낮 시간대가 예약이 가장 수월합니다. 이동이 왕복 20분을 넘으면 홈타이가, 도보권이면 로드샵이 유리합니다.',
-  '{d}에서 마사지를 찾는다면 먼저 로드샵과 출장 마사지 중 하나를 고르는 것이 순서입니다. 이 페이지에는 {shops}곳의 운영 정보와 함께 60분 {p60}만원대 / 90분 {p90}만원대의 참고 시세, 예약 전 확인 항목을 정리했습니다.',
-  '{p} {g} {d} 마사지 정보입니다. 업소 {shops}곳을 운영 형태별로 나눠 두었고, 90분 코스 기준 {p90}만원대가 체감 시세입니다. 홈타이는 2평 정도의 공간만 있으면 가능하며 전화로 당일 가능 여부를 확인할 수 있습니다.',
+  '{d}에서 마사지를 찾는다면 로드샵과 출장 마사지 중 하나를 고르는 것이 순서입니다. 이 페이지에는 로드샵·홈타이 {shops}곳의 운영 정보와 60분 {p60}만원대 / 90분 {p90}만원대 참고 시세, 예약 전 확인 항목을 정리했습니다.',
+  '{p} {g} {d} 마사지 정보입니다. 로드샵과 출장 마사지·홈타이 {shops}곳을 운영 형태별로 나눠 두었고, 90분 코스 기준 {p90}만원대가 체감 시세입니다. 홈타이는 2평 정도의 공간만 있으면 가능하며 전화로 당일 가능 여부를 확인할 수 있습니다.',
   '{d} 일대의 로드샵·출장 마사지·홈타이 {shops}곳을 한 페이지에 모았습니다. 60분 {p60}만원대부터 시작하며, 혼잡한 평일 저녁을 피하면 선택지가 넓어집니다. 각 카드에서 코스와 운영 시간을 바로 확인할 수 있습니다.',
-  '{g} {d}은 {t1} 성격이 강한 생활권입니다. 이 페이지에서는 업소 {shops}곳과 함께 코스 선택 기준, 60분 {p60}만원대 / 90분 {p90}만원대의 참고 가격, 출장 마사지 준비 방법을 순서대로 정리했습니다.',
-  '{d}에서 받을 수 있는 관리 정보를 모았습니다. 업소는 {shops}곳이며 로드샵과 홈타이가 함께 있습니다. 참고 시세는 90분 {p90}만원대이고, 처음이라면 60분 또는 90분으로 시작하는 쪽을 권합니다.',
+  '{g} {d}은 {t1} 성격이 강한 생활권입니다. 이 페이지에서는 로드샵과 출장 마사지·홈타이 {shops}곳, 코스 선택 기준, 60분 {p60}만원대 / 90분 {p90}만원대 참고 가격, 방문 준비 방법을 순서대로 정리했습니다.',
+  '{d}에서 받을 수 있는 관리 정보를 모았습니다. 업소는 {shops}곳이며 로드샵과 출장 마사지·홈타이가 함께 있습니다. 참고 시세는 90분 {p90}만원대이고, 처음이라면 60분 또는 90분으로 시작하는 쪽을 권합니다.',
 ];
 
-/** 행정구 요약 */
+/** 행정구 요약 — 디스크립션 키워드 2종 포함 */
 const GU_ANSWER = [
-  '{p} {g}는 행정동 {dongCount}곳으로 나뉘고, 이 사이트에는 업소 {shopCount}곳이 지역별로 정리되어 있습니다. 구 단위로 뭉뚱그려 찾기보다 생활권이 걸치는 행정동부터 좁혀 보는 쪽이 훨씬 빠릅니다. 참고 가격대는 60분 {p60}만원대, 90분 {p90}만원대입니다.',
+  '{p} {g}는 행정동 {dongCount}곳으로 나뉘고, 로드샵과 출장 마사지·홈타이 {shopCount}곳이 지역별로 정리되어 있습니다. 구 단위로 뭉뚱그려 찾기보다 생활권이 걸치는 행정동부터 좁혀 보는 쪽이 훨씬 빠릅니다. 참고 가격대는 60분 {p60}만원대, 90분 {p90}만원대입니다.',
   '{g} 전역의 로드샵·출장 마사지·홈타이 정보를 행정동 {dongCount}곳 단위로 나눠 담았습니다. 전체 업소는 {shopCount}곳이며, 60분 {p60}만원대 / 90분 {p90}만원대 범위에서 가격이 형성됩니다.',
-  '{p} {g} 마사지 안내입니다. {t1} 성격이 두드러지는 권역으로, 행정동 {dongCount}곳에 업소 {shopCount}곳을 배치했습니다. 평일 오전 11시~오후 3시가 예약이 가장 수월한 구간입니다.',
-  '{g}는 행정동마다 업소 구성과 가격대가 다릅니다. {dongCount}개 행정동, 업소 {shopCount}곳을 같은 기준으로 정리했으니 거주지·직장과 가까운 지역부터 확인해 보세요. 참고 시세는 90분 {p90}만원대입니다.',
+  '{p} {g} 마사지 안내입니다. {t1} 성격이 두드러지는 권역으로, 행정동 {dongCount}곳에 로드샵과 출장 마사지·홈타이 {shopCount}곳을 배치했습니다. 평일 오전 11시~오후 3시가 예약이 가장 수월한 구간입니다.',
+  '{g}는 행정동마다 업소 구성과 가격대가 다릅니다. {dongCount}개 행정동의 로드샵·출장 마사지·홈타이 {shopCount}곳을 같은 기준으로 정리했으니 거주지·직장과 가까운 지역부터 확인해 보세요. 참고 시세는 90분 {p90}만원대입니다.',
   '{p} {g}의 행정동 {dongCount}곳과 업소 {shopCount}곳을 모았습니다. 역세권은 로드샵, 단지 중심 지역은 출장 마사지·홈타이가 유리한 구조이며, 총 소요 시간을 기준으로 비교하면 선택이 쉬워집니다.',
 ];
 
@@ -107,6 +108,7 @@ export function dongContent(dong) {
     shops: dong.shops.length, dongCount: district.dongs.length, shopCount: district.shopCount,
   };
   const doc = {
+    metaDesc: fill(rng(`meta:${seed}`).pick(DONG_META), vars),
     answer: fill(rng(`ans:${seed}`).pick(DONG_ANSWER), vars),
     sections: renderSections(ALL_DONG, vars, seed),
     faqs: renderFaqs(DONG_FAQ, vars, seed, 4),
@@ -132,6 +134,7 @@ export function guContent(district) {
     p60: band.p60, p90: band.p90, p120: band.p120,
   };
   const doc = {
+    metaDesc: fill(rng(`meta:${seed}`).pick(GU_META), vars),
     answer: fill(rng(`ans:${seed}`).pick(GU_ANSWER), vars),
     sections: renderSections(ALL_GU, vars, seed),
     faqs: renderFaqs(GU_FAQ, vars, seed, 4),

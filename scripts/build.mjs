@@ -13,6 +13,7 @@ import { buildModel } from '../src/lib/model.mjs';
 import { dongContent, guContent, shopContent, charCount, unresolved } from '../src/lib/content.mjs';
 import { PROVINCE_CONTENT } from '../src/content/province-content.mjs';
 import { HOME, GUIDE } from '../src/content/static-pages.mjs';
+import { REQUIRED_KEYWORDS } from '../src/content/meta-pools.mjs';
 import * as P from '../src/templates/pages.mjs';
 import { markSvg } from '../src/lib/svg.mjs';
 
@@ -28,7 +29,20 @@ const write = (path, body) => {
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, body);
 };
-const writePage = (url, html) => write(`${url}index.html`, html);
+/**
+ * 모든 페이지 디스크립션에 '출장 마사지' + '홈타이' 가 들어갔는지 검사한다.
+ * 검색엔진이 읽는 최종 결과(렌더된 HTML)를 기준으로 보기 때문에 누락이 새지 않는다.
+ */
+const checkMeta = (url, html) => {
+  const desc = /<meta name="description" content="([^"]*)"/.exec(html)?.[1] ?? '';
+  if (!desc) { errors.push(`${url}: description 없음`); return; }
+  const miss = REQUIRED_KEYWORDS.filter((k) => !desc.includes(k));
+  if (miss.length) errors.push(`${url}: description 키워드 누락 [${miss.join(', ')}] — "${desc.slice(0, 48)}…"`);
+  if (desc.length > 165) errors.push(`${url}: description ${desc.length}자 (165자 초과)`);
+  if (desc.length < 60) errors.push(`${url}: description ${desc.length}자 (60자 미만)`);
+};
+
+const writePage = (url, html) => { checkMeta(url, html); write(`${url}index.html`, html); };
 const hash = (s) => createHash('sha256').update(s).digest('hex').slice(0, 8);
 
 // ── 에셋 (내용 해시 → 1년 immutable 캐시)
@@ -43,7 +57,7 @@ write('/favicon.svg', markSvg(40));
 const regions = JSON.parse(readFileSync('data/regions.json', 'utf8'));
 const provinces = buildModel(regions, site);
 
-// ── 검증 수집기
+// ── 검증 수집기 (선언 위치 주의: writePage 보다 먼저 쓰인다)
 const errors = [];
 const warn = [];
 const shingleSets = [];
@@ -92,7 +106,9 @@ writePage('/guide/', P.guidePage({ ...base, guide: GUIDE }));
 addUrl('/guide/', '0.6', 'monthly'); pages++;
 
 writePage('/search/', P.searchPage({ ...base })); pages++;
-write('/404.html', P.notFoundPage({ ...base })); pages++;
+const notFound = P.notFoundPage({ ...base });
+checkMeta('/404.html', notFound);
+write('/404.html', notFound); pages++;
 
 const searchIndex = [];
 

@@ -4,6 +4,7 @@ import { page, crumbs, esc } from './layout.mjs';
 import { heroPair } from '../lib/svg.mjs';
 import { proseBlock, answerBlock, faqBlock, statsBlock, shopCard, dongGrid, districtGroups, linkChips, demoNote } from './parts.mjs';
 import { shortDong } from '../content/vocab.mjs';
+import { STATIC_META } from '../content/meta-pools.mjs';
 import * as S from '../lib/seo.mjs';
 
 const clip = (s, n = 155) => {
@@ -62,7 +63,7 @@ ${demoNote()}`;
 
   return page({
     title: `서울·경기·인천 마사지 출장 홈타이 지역별 정보 | ${site.brand}`,
-    desc: clip(home.answer),
+    desc: STATIC_META.home,
     keywords: '마사지, 출장 마사지, 홈타이, 서울 마사지, 경기 마사지, 인천 마사지, 로드샵, 스웨디시, 아로마 마사지',
     path: '/', nav: 'home', provinces, assets,
     main,
@@ -110,7 +111,7 @@ ${demoNote()}`;
 
   return page({
     title: `${province.name} 마사지 출장 홈타이 | 행정구·행정동별 정보 | ${site.brand}`,
-    desc: clip(doc.answer),
+    desc: doc.meta,
     keywords: `${province.short} 마사지, ${province.short} 출장 마사지, ${province.short} 홈타이, ${province.short} 로드샵, ${province.short} 스웨디시`,
     path: province.url, nav: province.slug, provinces, assets,
     geo: { name: province.name, lat: province.districts[0].lat, lng: province.districts[0].lng },
@@ -171,7 +172,7 @@ ${demoNote()}`;
 
   return page({
     title: `${district.name} 마사지 출장 홈타이 | ${province.short} 행정동별 | ${site.brand}`,
-    desc: clip(doc.answer),
+    desc: doc.metaDesc,
     keywords: `${district.shortName} 마사지, ${district.shortName} 출장 마사지, ${district.shortName} 홈타이, ${district.shortName} 로드샵, ${province.short} ${district.shortName} 스웨디시`,
     path: district.url, nav: province.slug, provinces, assets,
     geo: { name: `${province.name} ${district.name}`, lat: district.lat, lng: district.lng },
@@ -233,7 +234,7 @@ ${linkChips([...dong.neighbors.map((n) => ({ name: n.name, url: n.url })), { nam
 
   return page({
     title: `${dong.name} 마사지 출장 홈타이 | ${province.short} ${district.shortName} | ${site.brand}`,
-    desc: clip(doc.answer),
+    desc: doc.metaDesc,
     keywords: `${dong.name} 마사지, ${dong.name} 출장 마사지, ${dong.name} 홈타이, ${shortDong(dong.name)} 마사지, ${district.shortName} 마사지, ${dong.name} 로드샵, ${shortDong(dong.name)} 스웨디시`,
     path: dong.url, nav: province.slug, provinces, assets,
     geo: { name: `${province.name} ${district.name} ${dong.name}`, lat: dong.lat, lng: dong.lng },
@@ -311,7 +312,7 @@ ${linkChips([{ name: `${dong.name} 지역 정보`, url: dong.url }, { name: `${d
 
   return page({
     title: `${shop.name} | ${dong.name} ${shop.typeLabel} · 출장 마사지 홈타이 | ${site.brand}`,
-    desc: clip(shop.desc),
+    desc: clip(shop.desc, 180),
     keywords: `${dong.name} ${shop.typeLabel}, ${dong.name} 마사지, ${dong.name} 출장 마사지, ${dong.name} 홈타이, ${district.shortName} 마사지`,
     path: shop.url, nav: province.slug, provinces, assets,
     // 가상 데이터인 동안 업소 상세는 색인에서 제외 (site.demoData)
@@ -342,7 +343,7 @@ ${linkChips(provinces.map((p) => ({ name: `${p.name} 지역 보기`, url: p.url 
 
   return page({
     title: `마사지·출장 마사지·홈타이 이용 가이드 | ${site.brand}`,
-    desc: clip(guide.answer),
+    desc: STATIC_META.guide,
     keywords: '마사지 예약 방법, 출장 마사지 이용법, 홈타이 준비, 마사지 가격, 마사지 코스 차이',
     path: '/guide/', nav: 'guide', provinces, assets, main,
     jsonld: [
@@ -366,7 +367,7 @@ export function searchPage(ctx) {
 ${linkChips(provinces.map((p) => ({ name: `${p.name} 전체`, url: p.url })), '시·도 바로가기')}`;
   return page({
     title: `지역 검색 | ${site.brand}`,
-    desc: '서울·경기·인천의 행정구·행정동을 이름으로 검색해 해당 지역의 마사지·출장 마사지·홈타이 정보를 찾습니다.',
+    desc: STATIC_META.search,
     path: '/search/', nav: 'search', provinces, assets, main,
     robots: 'noindex,follow',
     jsonld: [S.websiteLd()],
@@ -381,7 +382,7 @@ export function notFoundPage(ctx) {
 ${linkChips([{ name: '전체 지역', url: '/' }, ...provinces.map((p) => ({ name: p.name, url: p.url })), { name: '지역 검색', url: '/search/' }], '바로가기')}`;
   return page({
     title: `페이지를 찾을 수 없습니다 | ${site.brand}`,
-    desc: '요청하신 주소의 페이지를 찾을 수 없습니다. 서울·경기·인천의 행정구와 행정동 목록에서 원하는 지역을 다시 선택하거나, 지역 검색을 이용해 주세요.',
+    desc: STATIC_META.notFound,
     path: '/404.html', nav: '', provinces, assets, main, robots: 'noindex,nofollow', jsonld: [S.websiteLd()],
   });
 }

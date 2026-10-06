@@ -4,6 +4,7 @@
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { REQUIRED_KEYWORDS } from '../src/content/meta-pools.mjs';
 
 const OUT = 'dist';
 const files = [];
@@ -43,6 +44,14 @@ for (const f of files) {
   if (title.length > 90) fail.push(`${f}: title ${title.length}자 (과다)`);
   const desc = /name="description" content="(.*?)"/s.exec(h)?.[1] ?? '';
   if (desc.length < 50) fail.push(`${f}: description ${desc.length}자 (과소)`);
+  if (desc.length > 165) fail.push(`${f}: description ${desc.length}자 (과다)`);
+  // 디스크립션 필수 키워드
+  for (const k of REQUIRED_KEYWORDS) if (!desc.includes(k)) fail.push(`${f}: description '${k}' 누락`);
+  // 업소 설명(화면 노출)에도 동일 기준 적용
+  for (const d of [...h.matchAll(/<article class="card shop-card">[\s\S]*?<p class="card-desc">([\s\S]*?)<\/p>/g)]
+    .concat([...h.matchAll(/<div class="answer"><h2>업소 소개<\/h2><p>([\s\S]*?)<\/p>/g)])) {
+    for (const k of REQUIRED_KEYWORDS) if (!d[1].includes(k)) fail.push(`${f}: 업소 설명 '${k}' 누락`);
+  }
 
   // 이미지 대체 텍스트 (인라인 SVG는 role=img + aria-label 사용)
   const svgs = (h.match(/<svg[^>]*>/g) ?? []).filter((t) => !t.includes('aria-hidden'));
@@ -57,6 +66,7 @@ for (const f of files) {
 
 console.log(`HTML ${count.total.toLocaleString()}개 · 평균 ${(sumSize / count.total / 1024).toFixed(1)}KB · 최대 ${(maxSize / 1024).toFixed(1)}KB (${maxFile})`);
 console.log(`FAQPage ${count.faq} · geo 메타 ${count.geo} · noindex ${count.noindex}`);
+console.log(`디스크립션 필수 키워드 [${REQUIRED_KEYWORDS.join(', ')}] — 전 페이지 검사 완료`);
 if (fail.length) {
   console.error(`\n✖ ${fail.length}건`);
   console.error([...new Set(fail.map((x) => x.replace(/^dist\/[^:]+/, '…')))].slice(0, 20).join('\n'));
