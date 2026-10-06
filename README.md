@@ -20,6 +20,7 @@ npm run dev       # 빌드 후 http://localhost:4321 로컬 확인
 | 도메인 | Netlify 임시 URL | Netlify 환경변수 `SITE_URL=https://내도메인.com` |
 | 대표 전화 | `0508-202-4749` | `site.config.mjs` → `phone` |
 | 업소 데이터 | **가상 예시** | `data/` 연동 후 `site.config.mjs` → `demoData: false` |
+| 네이버 소유확인 | 등록 완료 | `site.config.mjs` → `verification.naver` |
 
 ### `demoData` 스위치가 하는 일
 
@@ -97,7 +98,22 @@ src/assets/              style.css, app.js
 - **구조화 데이터** — `WebSite`+`SearchAction` / `Organization` / `BreadcrumbList` / `Place` / `Service` / `ItemList` / `FAQPage` / `Article`
 - **네이버 C-Rank 고려** — 한 주제(지역 × 마사지)로 사이트 전체를 묶고, 시도→구→동→업소→인접동으로 내부링크를 촘촘하게 연결해 주제 집중도와 문서 깊이를 확보했습니다. 지역별 글이 같은 틀을 쓰되 표면 문장이 거의 겹치지 않도록 중복도를 빌드에서 수치로 관리합니다.
 
-> 네이버 서치어드바이저 소유확인 메타는 `src/templates/layout.mjs` 의 `<head>` 에 한 줄 추가하면 됩니다.
+### 검색엔진 소유확인
+
+소유확인 메타는 `site.config.mjs` → `verification` 에서 관리하며, **값이 빈 항목은 태그 자체를 출력하지 않습니다.**
+
+| 검색엔진 | 키 | 환경변수 | 현재 |
+|---|---|---|---|
+| 네이버 서치어드바이저 | `naver` | `NAVER_VERIFICATION` | 등록됨 |
+| 구글 서치콘솔 | `google` | `GOOGLE_VERIFICATION` | 비어 있음 |
+| 빙 웹마스터 | `bing` | `BING_VERIFICATION` | 비어 있음 |
+
+도메인 연결 후 네이버 서치어드바이저에서 할 일:
+
+1. 사이트 등록 → **HTML 태그** 방식으로 소유확인 (태그는 이미 전 페이지에 들어가 있음)
+2. **요청 → 사이트맵 제출** 에 `https://도메인/sitemap.xml` 등록
+3. **요청 → RSS 제출** 은 해당 없음 (뉴스·블로그형 피드가 없는 구조)
+4. **검증 → robots.txt** 로 `Yeti` 허용 확인
 
 ---
 

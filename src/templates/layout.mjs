@@ -6,6 +6,16 @@ export const esc = (s) => String(s ?? '')
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
+/** 검색엔진 소유확인 메타 — 값이 있는 것만 출력 */
+function verificationMeta() {
+  const v = site.verification ?? {};
+  return [
+    v.naver && `<meta name="naver-site-verification" content="${esc(v.naver)}">`,
+    v.google && `<meta name="google-site-verification" content="${esc(v.google)}">`,
+    v.bing && `<meta name="msvalidate.01" content="${esc(v.bing)}">`,
+  ].filter(Boolean).join('\n');
+}
+
 /** 모바일 하단 고정 전화 바 — 요구사항: 버튼 문구에 '출장 마사지' 포함 */
 function callbar(label) {
   return `<div class="callbar" role="region" aria-label="전화 상담">
@@ -89,6 +99,7 @@ ${o.keywords ? `<meta name="keywords" content="${esc(o.keywords)}">` : ''}
 ${geoMeta}
 <meta name="theme-color" content="#0B0910" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#FAF8FC" media="(prefers-color-scheme: light)">
+${verificationMeta()}
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">

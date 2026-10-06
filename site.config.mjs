@@ -16,6 +16,19 @@ export const site = {
   phoneLabel: '0508-202-4749',
   ctaLabel: '출장 마사지 전화연결',
 
+  /**
+   * 검색엔진 사이트 소유확인 메타 태그.
+   * 값이 비어 있으면 해당 메타를 아예 출력하지 않는다.
+   *   네이버  : 서치어드바이저 → 사이트 등록 → HTML 태그 방식
+   *   구글    : Search Console → 소유권 확인 → HTML 태그
+   *   빙/네이트: 각 웹마스터 도구
+   */
+  verification: {
+    naver: process.env.NAVER_VERIFICATION || 'fbb133767a87d0c16b74337a0c43d974891e6d9d',
+    google: process.env.GOOGLE_VERIFICATION || '',
+    bing: process.env.BING_VERIFICATION || '',
+  },
+
   /** 업소 데이터 성격 고지 — 가상 데이터임을 모든 페이지에 노출 */
   demoNotice: '본 사이트에 표시된 업소 정보(상호·평점·가격·운영시간)는 플랫폼 구조 검증을 위한 가상 예시 데이터입니다. 실제 영업 중인 업소가 아니며, 실데이터 연동 시 전부 교체됩니다.',
 
