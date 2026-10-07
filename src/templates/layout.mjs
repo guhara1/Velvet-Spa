@@ -47,6 +47,7 @@ ${cols}
 <li><a href="/">전체 지역</a></li>
 <li><a href="/search/">지역 검색</a></li>
 <li><a href="/guide/">이용 가이드</a></li>
+<li><a href="/sitemap/">전체 지역 목록</a></li>
 <li><a href="tel:${site.phone}">${esc(site.ctaLabel)} ${esc(site.phoneLabel)}</a></li>
 </ul></div>
 </div>
@@ -101,6 +102,9 @@ ${geoMeta}
 <meta name="theme-color" content="#FAF8FC" media="(prefers-color-scheme: light)">
 ${verificationMeta()}
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="${esc(site.brand)} RSS" href="/rss.xml">
+<link rel="alternate" type="application/atom+xml" title="${esc(site.brand)} Atom" href="/atom.xml">
+<link rel="sitemap" type="application/xml" title="사이트맵" href="/sitemap.xml">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="${o.assets.css}">

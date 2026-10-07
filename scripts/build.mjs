@@ -16,6 +16,7 @@ import { HOME, GUIDE } from '../src/content/static-pages.mjs';
 import { REQUIRED_KEYWORDS } from '../src/content/meta-pools.mjs';
 import * as P from '../src/templates/pages.mjs';
 import { markSvg } from '../src/lib/svg.mjs';
+import { rssXml, atomXml, robotsTxt } from '../src/lib/feeds.mjs';
 
 const OUT = 'dist';
 const t0 = Date.now();
@@ -106,6 +107,16 @@ writePage('/guide/', P.guidePage({ ...base, guide: GUIDE }));
 addUrl('/guide/', '0.6', 'monthly'); pages++;
 
 writePage('/search/', P.searchPage({ ...base })); pages++;
+
+writePage('/sitemap/', P.sitemapPage({ ...base }));
+addUrl('/sitemap/', '0.7', 'weekly'); pages++;
+
+// 피드 항목 — 사이트맵과 별개 경로로 수집을 유도한다
+const feedItems = [
+  { title: `${site.brand} — ${site.tagline}`, url: '/', desc: '서울·경기·인천 행정동별 로드샵·출장 마사지·홈타이 정보' },
+  { title: '마사지·출장 마사지·홈타이 이용 가이드', url: '/guide/', desc: '운영 형태·시간·코스·총액·위생 확인 순서' },
+  { title: '전체 지역 목록', url: '/sitemap/', desc: '행정구 77곳, 행정동 753곳 전체 목록' },
+];
 const notFound = P.notFoundPage({ ...base });
 checkMeta('/404.html', notFound);
 write('/404.html', notFound); pages++;
@@ -118,6 +129,7 @@ for (const province of provinces) {
   checkDoc('시도', province.url, doc);
   writePage(province.url, P.provincePage({ ...base, province, doc }));
   addUrl(province.url, '0.9', 'weekly'); pages++;
+  feedItems.push({ title: `${province.name} 마사지·출장 마사지·홈타이`, url: province.url, desc: doc.meta });
 
   for (const district of province.districts) {
     const gdoc = guContent(district);
@@ -125,6 +137,7 @@ for (const province of provinces) {
     const siblings = province.districts.filter((d) => d !== district).slice(0, 10);
     writePage(district.url, P.districtPage({ ...base, province, district, doc: gdoc, siblings }));
     addUrl(district.url, '0.8', 'weekly'); pages++;
+    feedItems.push({ title: `${district.name} 마사지·출장 마사지·홈타이`, url: district.url, desc: gdoc.metaDesc });
     searchIndex.push({ n: district.name, p: province.name, s: district.slug, u: district.url });
 
     for (const dong of district.dongs) {
@@ -132,6 +145,7 @@ for (const province of provinces) {
       checkDoc('행정동', dong.url, ddoc);
       writePage(dong.url, P.dongPage({ ...base, province, district, dong, doc: ddoc }));
       addUrl(dong.url, '0.7', 'weekly'); pages++;
+      feedItems.push({ title: `${dong.name} 마사지·출장 마사지·홈타이`, url: dong.url, desc: ddoc.metaDesc });
       searchIndex.push({ n: dong.name, p: `${province.short} ${district.name}`, s: dong.slug, u: dong.url });
 
       for (const shop of dong.shops) {
@@ -170,26 +184,19 @@ write('/sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>
 ${chunks.map((_, i) => `<sitemap><loc>${site.url}/sitemaps/sitemap-${i + 1}.xml</loc><lastmod>${lastmod}</lastmod></sitemap>`).join('\n')}
 </sitemapindex>`);
 
-// ── robots.txt (네이버 Yeti 포함)
-write('/robots.txt', `# ${site.brand}
-User-agent: Yeti
-Allow: /
+// ── RSS 2.0 / Atom 1.0 (네이버 RSS 제출 + 구글 사이트맵 포맷 겸용)
+const feed = feedItems.slice(0, site.feedMax);
+write('/rss.xml', rssXml(feed, lastmod));
+write('/atom.xml', atomXml(feed, lastmod));
 
-User-agent: Googlebot
-Allow: /
+// ── robots.txt
+write('/robots.txt', robotsTxt());
 
-User-agent: Daumoa
-Allow: /
+// ── IndexNow 키 파일 (Bing·Yandex·Seznam 즉시 통보용)
+write(`/${site.indexNowKey}.txt`, site.indexNowKey);
 
-User-agent: bingbot
-Allow: /
-
-User-agent: *
-Allow: /
-Disallow: /search/
-
-Sitemap: ${site.url}/sitemap.xml
-`);
+// ── 색인 요청용 URL 목록 (scripts/indexnow.mjs 가 읽는다)
+write('/urllist.txt', urls.map((u) => `${site.url}${u.loc}`).join('\n') + '\n');
 
 // ── 중복도 검사 (같은 종류끼리 표본 비교)
 function dupCheck(kind, limit = 260) {
@@ -222,7 +229,23 @@ console.table(dup.map((d) => ({
 })));
 console.log(`페이지 ${pages.toLocaleString()}개 · 사이트맵 URL ${urls.length.toLocaleString()}개 · 지역 본문 ${lens.toLocaleString()}건`);
 console.log(`에셋 ${assets.css} / ${assets.js}`);
-console.log(`canonical 기준 URL: ${site.url}${site.url.includes('example') ? '  ← SITE_URL 환경변수로 교체 필요' : ''}`);
+console.log(`색인 파일: /sitemap.xml · /rss.xml (${feed.length}건) · /atom.xml · /robots.txt · /urllist.txt · /${site.indexNowKey}.txt`);
+console.log(`canonical 기준 URL: ${site.url}`);
+if (site.urlIsPlaceholder) {
+  console.log('');
+  console.log('╔══════════════════════════════════════════════════════════════════╗');
+  console.log('║  ⚠  SITE_URL 이 설정되지 않았습니다                               ║');
+  console.log('║                                                                  ║');
+  console.log('║  sitemap.xml · rss.xml · robots.txt · canonical 이 모두          ║');
+  console.log('║  example.netlify.app 으로 생성됩니다. 이 상태로는 네이버·구글     ║');
+  console.log('║  어느 쪽에도 색인되지 않습니다.                                   ║');
+  console.log('║                                                                  ║');
+  console.log('║  Netlify → Site settings → Environment variables 에              ║');
+  console.log('║    SITE_URL = https://실제도메인.com                             ║');
+  console.log('║  을 등록하고 재배포하세요. (Netlify 기본 배포면 자동 주입되는     ║');
+  console.log('║   URL 변수를 쓰므로 별도 설정 없이도 netlify.app 주소가 들어갑니다)║');
+  console.log('╚══════════════════════════════════════════════════════════════════╝');
+}
 if (warn.length) console.log(`\n⚠ 경고 ${warn.length}건\n${warn.slice(0, 10).map((w) => `  · ${w}`).join('\n')}`);
 if (errors.length) {
   console.error(`\n✖ 검증 실패 ${errors.length}건`);

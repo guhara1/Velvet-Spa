@@ -11,6 +11,9 @@ export const site = {
   /** 도메인 — 미확정. Netlify 배포 URL(process.env.URL)을 우선 사용 */
   url: (process.env.SITE_URL || process.env.URL || 'https://example.netlify.app').replace(/\/$/, ''),
 
+  /** 실제 도메인이 주입되지 않은 상태인지 (사이트맵·canonical·색인 제출의 전제 조건) */
+  urlIsPlaceholder: !(process.env.SITE_URL || process.env.URL),
+
   /** 대표 전화 (모바일 하단 바 / 업소 CTA 공통) */
   phone: '05082024749',
   phoneLabel: '0508-202-4749',
@@ -28,6 +31,16 @@ export const site = {
     google: process.env.GOOGLE_VERIFICATION || '',
     bing: process.env.BING_VERIFICATION || '',
   },
+
+  /**
+   * IndexNow 키 — Bing·Yandex·Seznam 에 변경 URL 을 즉시 통보하는 표준.
+   * 빌드 시 /<key>.txt 파일이 생성되고, scripts/indexnow.mjs 가 이 키로 제출한다.
+   * (구글과 네이버는 IndexNow 미지원 — 각 웹마스터 도구를 사용한다)
+   */
+  indexNowKey: process.env.INDEXNOW_KEY || '6f959dbf4b9a92fc52db4290984d7b7b',
+
+  /** RSS/Atom 피드에 담을 최대 항목 수 */
+  feedMax: 300,
 
   /** 업소 데이터 성격 고지 — 가상 데이터임을 모든 페이지에 노출 */
   demoNotice: '본 사이트에 표시된 업소 정보(상호·평점·가격·운영시간)는 플랫폼 구조 검증을 위한 가상 예시 데이터입니다. 실제 영업 중인 업소가 아니며, 실데이터 연동 시 전부 교체됩니다.',

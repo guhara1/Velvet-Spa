@@ -326,3 +326,15 @@ body:has(.callbar) { padding-bottom: 86px; }
 .foot a:hover { color: var(--gold); }
 .disclaimer { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 12.5px; line-height: 1.8; color: var(--muted); }
 .disclaimer b { color: var(--text-2); }
+
+/* ── HTML 사이트맵 ───────────────────────────────────── */
+.sm-gu { padding: 14px 0; border-top: 1px solid var(--line); }
+.sm-gu h3 { margin: 0 0 8px; font-size: 16px; display: flex; align-items: baseline; gap: 9px; }
+.sm-gu h3 a { color: var(--text); }
+.sm-gu h3 a:hover { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
+.sm-count { font-size: 12px; font-weight: 600; color: var(--muted); }
+.sm-dongs { display: flex; flex-wrap: wrap; gap: 6px 0; margin: 0; padding: 0; list-style: none; }
+.sm-dongs li { display: flex; align-items: center; }
+.sm-dongs li + li::before { content: ''; width: 1px; height: 11px; margin: 0 9px; background: var(--line-2); }
+.sm-dongs a { font-size: 14px; color: var(--text-2); white-space: nowrap; }
+.sm-dongs a:hover { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }

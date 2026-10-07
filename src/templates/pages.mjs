@@ -386,3 +386,43 @@ ${linkChips([{ name: '전체 지역', url: '/' }, ...provinces.map((p) => ({ nam
     path: '/404.html', nav: '', provinces, assets, main, robots: 'noindex,nofollow', jsonld: [S.websiteLd()],
   });
 }
+
+/* ────────────────────────────── HTML 사이트맵 (크롤 깊이 단축용) */
+export function sitemapPage(ctx) {
+  const { provinces, assets, lastmod } = ctx;
+  const c = crumbs([{ name: '전체 지역', url: '/' }, { name: '전체 지역 목록', url: '/sitemap/' }]);
+  const totalDong = provinces.reduce((s, p) => s + p.dongCount, 0);
+  const totalGu = provinces.reduce((s, p) => s + p.districts.length, 0);
+
+  const blocks = provinces.map((p) => `<section aria-labelledby="sm-${p.slug}">
+<div class="section-head"><h2 id="sm-${p.slug}"><a href="${p.url}">${esc(p.name)}</a></h2>
+<span class="section-note">행정구 ${p.districts.length}곳 · 행정동 ${p.dongCount}곳</span></div>
+${p.districts.map((d) => `<div class="sm-gu">
+<h3><a href="${d.url}">${esc(d.name)}</a> <span class="sm-count">행정동 ${d.dongs.length}</span></h3>
+<ul class="sm-dongs">${d.dongs.map((x) => `<li><a href="${x.url}">${esc(x.name)}</a></li>`).join('')}</ul>
+</div>`).join('')}
+</section>`).join('');
+
+  const main = `${c.html}
+<h1>전체 지역 목록</h1>
+<p class="lead">서울·경기·인천의 행정구 ${totalGu}곳과 행정동 ${totalDong}곳을 한 페이지에 모았습니다. 각 지역 페이지에는 로드샵과 출장 마사지·홈타이 정보가 같은 기준으로 정리되어 있습니다.</p>
+<ul class="inline-links">
+<li><a href="/sitemap.xml">XML 사이트맵</a></li>
+<li><a href="/rss.xml">RSS 피드</a></li>
+<li><a href="/atom.xml">Atom 피드</a></li>
+<li><a href="/search/">지역 검색</a></li>
+</ul>
+${blocks}`;
+
+  return page({
+    title: `전체 지역 목록 | 행정구 ${totalGu}곳 · 행정동 ${totalDong}곳 | ${site.brand}`,
+    desc: `서울·경기·인천 행정구 ${totalGu}곳, 행정동 ${totalDong}곳의 로드샵·출장 마사지·홈타이 정보를 한 페이지에 모은 전체 목록입니다. 원하는 지역을 바로 찾아 이동할 수 있습니다.`,
+    keywords: '지역별 마사지, 행정동 마사지, 출장 마사지 지역, 홈타이 지역, 전체 지역 목록',
+    path: '/sitemap/', nav: 'sitemap', provinces, assets, main,
+    jsonld: [
+      S.websiteLd(), S.organizationLd(), c.ld,
+      S.itemListLd({ path: '/sitemap/', name: '전체 행정구 목록', items: provinces.flatMap((p) => p.districts).map((d) => ({ name: d.name, url: d.url })) }),
+      S.articleLd({ path: '/sitemap/', headline: '서울·경기·인천 전체 지역 목록', desc: '행정구와 행정동 전체 목록', lastmod }),
+    ],
+  });
+}

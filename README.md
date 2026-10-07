@@ -8,6 +8,7 @@ npm run regions   # data/regions.json 재생성 (네트워크 필요, 최초 1�
 npm run build     # dist/ 생성 + 품질 검증
 npm run qa        # 빌드 결과 점검 (메타/접근성/JSON-LD)
 npm run dev       # 빌드 후 http://localhost:4321 로컬 확인
+npm run indexnow  # IndexNow 일괄 제출 (Bing·Yandex·Seznam, SITE_URL 필요)
 ```
 
 ---
@@ -98,9 +99,20 @@ src/assets/              style.css, app.js
 - **구조화 데이터** — `WebSite`+`SearchAction` / `Organization` / `BreadcrumbList` / `Place` / `Service` / `ItemList` / `FAQPage` / `Article`
 - **네이버 C-Rank 고려** — 한 주제(지역 × 마사지)로 사이트 전체를 묶고, 시도→구→동→업소→인접동으로 내부링크를 촘촘하게 연결해 주제 집중도와 문서 깊이를 확보했습니다. 지역별 글이 같은 틀을 쓰되 표면 문장이 거의 겹치지 않도록 중복도를 빌드에서 수치로 관리합니다.
 
-### 검색엔진 소유확인
+### 색인 가속 — 생성되는 파일
 
-소유확인 메타는 `site.config.mjs` → `verification` 에서 관리하며, **값이 빈 항목은 태그 자체를 출력하지 않습니다.**
+| 경로 | 내용 | 용도 |
+|---|---|---|
+| `/sitemap.xml` | 사이트맵 인덱스 | 구글·네이버·빙 공통 |
+| `/sitemaps/sitemap-1.xml` | 836 URL + `lastmod`·`priority` | 5,000 URL 단위 자동 분할 |
+| `/rss.xml` | RSS 2.0 · 300항목 | **네이버 서치어드바이저 RSS 제출**, 구글은 사이트맵으로 인정 |
+| `/atom.xml` | Atom 1.0 · 300항목 | 구글 사이트맵 포맷 겸용 |
+| `/robots.txt` | Yeti·NaverBot·Daumoa·Googlebot·bingbot 명시 허용 + Sitemap 3줄 | 크롤러 진입점 |
+| `/sitemap/` | **HTML 사이트맵** — 행정구 77 + 행정동 753 전체 링크 | 크롤 깊이를 3단계 → 1단계로 단축 |
+| `/urllist.txt` | 색인 대상 836 URL 평문 목록 | IndexNow 제출 입력 |
+| `/<indexNowKey>.txt` | IndexNow 키 확인 파일 | Bing·Yandex·Seznam 소유확인 |
+
+소유확인 메타는 `site.config.mjs` → `verification` 에서 관리하며, **값이 빈 항목은 태그를 출력하지 않습니다.**
 
 | 검색엔진 | 키 | 환경변수 | 현재 |
 |---|---|---|---|
@@ -108,12 +120,41 @@ src/assets/              style.css, app.js
 | 구글 서치콘솔 | `google` | `GOOGLE_VERIFICATION` | 비어 있음 |
 | 빙 웹마스터 | `bing` | `BING_VERIFICATION` | 비어 있음 |
 
-도메인 연결 후 네이버 서치어드바이저에서 할 일:
+### 색인 요청 순서
 
-1. 사이트 등록 → **HTML 태그** 방식으로 소유확인 (태그는 이미 전 페이지에 들어가 있음)
-2. **요청 → 사이트맵 제출** 에 `https://도메인/sitemap.xml` 등록
-3. **요청 → RSS 제출** 은 해당 없음 (뉴스·블로그형 피드가 없는 구조)
-4. **검증 → robots.txt** 로 `Yeti` 허용 확인
+**0단계 — 이게 안 되면 아래 전부 무효**
+
+`SITE_URL` 이 없으면 사이트맵·robots·canonical 이 전부 `example.netlify.app` 으로 생성되고,
+빌드가 경고 배너를 띄웁니다. Netlify 환경변수에 `SITE_URL=https://실제도메인.com` 을 등록하고 재배포하세요.
+(커스텀 도메인 없이 Netlify 기본 주소를 쓸 거면 Netlify 가 주입하는 `URL` 변수를 자동으로 사용하므로 별도 설정이 필요 없습니다.)
+
+**네이버** — 서치어드바이저 → 내 사이트
+
+1. 사이트 등록 후 **HTML 태그** 방식으로 소유확인 (태그는 전 페이지에 이미 삽입되어 있음)
+2. 요청 → **사이트맵 제출** : `https://도메인/sitemap.xml`
+3. 요청 → **RSS 제출** : `https://도메인/rss.xml`
+4. 요청 → **웹페이지 수집** : 홈과 주요 행정구 URL 을 수동 제출 (일 50건 한도)
+5. 검증 → **robots.txt** / **웹페이지 최적화** 로 진단 확인
+
+**구글** — Search Console
+
+1. 소유확인 후 **색인 생성 → Sitemaps** 에 `sitemap.xml` 제출
+2. **URL 검사 → 색인 생성 요청** 으로 홈·가이드·HTML 사이트맵·주요 행정구를 수동 요청 (일 10건 안팎 한도)
+3. 나머지는 HTML 사이트맵(`/sitemap/`)을 통해 크롤러가 한 번에 발견합니다
+
+**빙 · Yandex · Seznam** — IndexNow 로 즉시 통보
+
+```bash
+SITE_URL=https://내도메인.com npm run build
+SITE_URL=https://내도메인.com npm run indexnow          # 836 URL 일괄 제출
+SITE_URL=https://내도메인.com npm run indexnow -- --dry # 전송 없이 미리보기
+```
+
+### 쓰지 않는 방법 (알고 넘어갈 것)
+
+- **사이트맵 핑 URL** (`google.com/ping?sitemap=`, `bing.com/ping?sitemap=`) — 2023년에 양쪽 모두 폐지되었습니다. 호출해도 효과가 없습니다
+- **구글 Indexing API** — 공식 지원 대상이 채용공고(JobPosting)와 방송이벤트(BroadcastEvent) 뿐이라 이 사이트에는 쓸 수 없습니다
+- **IndexNow 로 구글·네이버 제출** — 두 곳 모두 IndexNow 미지원입니다
 
 ---
 
