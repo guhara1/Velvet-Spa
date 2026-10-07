@@ -25,11 +25,25 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
+# .xml 은 Netlify 가 application/xml 로 알아서 서빙한다.
+# 여기서 Content-Type 을 강제하면 '파일이 없을 때 돌아오는 404 HTML' 에도
+# 그 헤더가 붙어, 브라우저가 HTML 을 XML 로 파싱하다 깨진 피드처럼 보인다.
+# (error on line 1 at column 2: StartTag: invalid element name ← <!doctype 의 '!')
+# 캐시만 지정하고 타입은 건드리지 않는다.
 [[headers]]
   for = "/*.xml"
   [headers.values]
     Cache-Control = "public, max-age=3600"
-    Content-Type = "application/xml; charset=utf-8"
+
+[[headers]]
+  for = "/sitemaps/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/build-info.json"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
   for = "/search-index.json"

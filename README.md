@@ -150,6 +150,26 @@ SITE_URL=https://내도메인.com npm run indexnow          # 836 URL 일괄 제
 SITE_URL=https://내도메인.com npm run indexnow -- --dry # 전송 없이 미리보기
 ```
 
+### 배포 확인 / 문제 해결
+
+**지금 어떤 커밋이 떠 있는지** 는 `https://도메인/build-info.json` 으로 확인합니다.
+
+```json
+{ "builtAt": "...", "siteUrl": "...", "siteUrlFromEnv": true,
+  "commit": "...", "branch": "...", "pages": 3097, "indexableUrls": 836 }
+```
+
+`commit` 이 최신 커밋과 다르면 Netlify 가 아직 재배포하지 않았거나 빌드가 실패한 것입니다.
+Netlify → Deploys 에서 최신 배포의 상태와 로그를 확인하세요.
+
+**`/rss.xml` 에서 `error on line 1 at column 2: StartTag: invalid element name` 이 뜬다면**
+
+파일이 깨진 것이 아니라 **그 경로에 파일이 없어서 404 HTML 이 돌아온 것** 입니다.
+예전 `netlify.toml` 이 `/*.xml` 에 `Content-Type: application/xml` 을 강제하고 있어서,
+404 로 돌아온 HTML(`<!doctype html>`)까지 XML 로 파싱되며 2번째 글자 `!` 에서 터졌습니다.
+지금은 Content-Type 강제를 제거해, 파일이 없으면 평범한 404 페이지가 보입니다.
+→ 해결은 **최신 커밋으로 재배포**. `/build-info.json` 으로 반영 여부를 확인하세요.
+
 ### 쓰지 않는 방법 (알고 넘어갈 것)
 
 - **사이트맵 핑 URL** (`google.com/ping?sitemap=`, `bing.com/ping?sitemap=`) — 2023년에 양쪽 모두 폐지되었습니다. 호출해도 효과가 없습니다

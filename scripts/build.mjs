@@ -198,6 +198,22 @@ write(`/${site.indexNowKey}.txt`, site.indexNowKey);
 // ── 색인 요청용 URL 목록 (scripts/indexnow.mjs 가 읽는다)
 write('/urllist.txt', urls.map((u) => `${site.url}${u.loc}`).join('\n') + '\n');
 
+// ── 배포본 식별 파일
+// 어떤 커밋이 지금 떠 있는지 브라우저에서 바로 확인할 수 있게 한다.
+// Netlify 는 빌드 시 COMMIT_REF / BRANCH / DEPLOY_ID 를 주입한다.
+write('/build-info.json', JSON.stringify({
+  builtAt: new Date().toISOString(),
+  siteUrl: site.url,
+  siteUrlFromEnv: !site.urlIsPlaceholder,
+  commit: process.env.COMMIT_REF ?? null,
+  branch: process.env.BRANCH ?? null,
+  deployId: process.env.DEPLOY_ID ?? null,
+  pages,
+  indexableUrls: urls.length,
+  feedItems: feed.length,
+  demoData: site.demoData,
+}, null, 2) + '\n');
+
 // ── 중복도 검사 (같은 종류끼리 표본 비교)
 function dupCheck(kind, limit = 260) {
   const list = shingleSets.filter((s) => s.kind === kind);
